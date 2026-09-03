@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sumr"
+version = "0.1.0a1"
+description = "R-compatible data-science subset for the Sum ecosystem."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "GPL-2.0-or-later" }
+authors = [{ name = "William Martinez Bas", email = "metfar@gmail.com" }]
+dependencies = ['sumcore>=0.1.0a1', 'sumdata>=0.1.0a1', 'sumplot>=0.1.0a1']
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3"]
+
+[project.scripts]
+sumR = "sumr.cli:main"
+sumr = "sumr.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sumr*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
