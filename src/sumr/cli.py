@@ -25,6 +25,7 @@ import re;
 import sys;
 from . import __version__;
 from .runtime import RSymbol, Runtime, aes, after_stat, c, data, factor, geom_bar, geom_bar3d, geom_histogram, ggsave, ggplot, print_value, readRDS, saveRDS, system2;
+from .screen import cols, cursor, gcolors, gheight, gprint, gprintf, gwidth, rows;
 from sumplot import PlotSpec;
 
 _TOKEN=re.compile(r'\s*(?:(?P<string>"(?:\\.|[^"\\])*")|(?P<number>-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(?P<assign><-)|(?P<name>[A-Za-z_.][A-Za-z0-9_.]*)|(?P<op>[(),+=]))');
@@ -115,9 +116,7 @@ class Parser:
             result=self.add(); self.pop(')'); return result;
         if kind!='name': raise SyntaxError("Unexpected token: {}".format(value));
         if self.peek('('): return self.call(value);
-        if value=='TRUE': return True;
-        if value=='FALSE': return False;
-        if value=='NULL': return None;
+        if value in self.rt.env and not callable(self.rt.env[value]): return self.rt.env[value];
         return RSymbol(value);
     def call(self,name):
         self.pop('('); args=[]; kwargs={};
@@ -153,6 +152,9 @@ class Parser:
         if lname=='system2': return system2(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});
         if lname=='readrds': return readRDS(*self.values(args));
         if lname=='saverds': return saveRDS(*self.values(args));
+        if lname in ('cursor','cols','rows','gwidth','gheight','gcolors','gprint','gprintf'):
+            fn={'cursor':cursor,'cols':cols,'rows':rows,'gwidth':gwidth,'gheight':gheight,'gcolors':gcolors,'gprint':gprint,'gprintf':gprintf}[lname];
+            return fn(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});
         raise ValueError("Unsupported sumR function: {}".format(name));
 
 def _expression(text,rt,output): return Parser(text,rt,output).parse();

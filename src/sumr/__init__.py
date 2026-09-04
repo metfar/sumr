@@ -19,6 +19,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #  
-__version__="0.1.0a2";
+__version__="0.1.0a3";
 from .runtime import *;
 from .cli import execute;
+
+from .screen import *;

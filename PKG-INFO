@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: sumr
-Version: 0.1.0a2
+Version: 0.1.0a3
 Summary: R-compatible data-science subset for the Sum ecosystem.
 Author-email: William Martinez Bas <metfar@gmail.com>
 License: GPL-2.0-or-later
@@ -9,7 +9,9 @@ Classifier: Programming Language :: Python :: 3
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: sumcore>=0.1.0a2
+Requires-Dist: sumcore>=0.1.0a3
+Requires-Dist: sumui>=0.1.0a12
+Requires-Dist: sumtui>=0.8.0a12
 Requires-Dist: sumdata>=0.1.0a2
 Requires-Dist: sumplot>=0.1.0a2
 Dynamic: license-file
