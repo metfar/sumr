@@ -19,9 +19,14 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #  
-import re;
+import subprocess;
+from dataclasses import dataclass;
 from sumdata import NA, dataset, dataset_names, read_rds, save_rds;
-from sumplot import AesSpec, ColumnRef, PlotSpec, LayerSpec, to_chart_spec;
+from sumplot import AesSpec, ColumnRef, PlotSpec, after_stat as plot_after_stat, geom_bar as plot_geom_bar, geom_bar3d as plot_geom_bar3d, geom_histogram as plot_geom_histogram, ggplot as plot_ggplot, ggsave as plot_ggsave, show_plot, to_chart_spec;
+
+@dataclass(frozen=True)
+class RSymbol: name: str;
+
 class RVector(list):
     def _bin(self,other,fn):
         right=list(other) if isinstance(other,(list,tuple,RVector)) else [other]; n=max(len(self),len(right)); return RVector(fn(self[i%len(self)],right[i%len(right)]) for i in range(n));
@@ -32,19 +37,50 @@ class RVector(list):
     def r_index(self,index):
         if isinstance(index,int): return self[index-1] if index>0 else RVector(v for i,v in enumerate(self,1) if i != -index);
         return RVector(self[i-1] for i in index if i>0);
+
 def c(*values): return RVector(values);
 def factor(values): return RVector(values);
-def data(name=None, package=None):
+def data(name=None,package=None):
     if package=="datasets" and name is None: return dataset_names(display=True);
     return dataset(name);
 def readRDS(path): return read_rds(path);
 def saveRDS(value,path): return save_rds(path,value);
-def aes(**kwargs): return AesSpec(tuple((key,ColumnRef(value) if isinstance(value,str) else value) for key,value in kwargs.items()));
-def ggplot(data_value=None,mapping=None): return PlotSpec(data_value,mapping or AesSpec());
-def geom_bar(mapping=None,position="stack",stat="identity",**kwargs): return LayerSpec("bar",mapping or AesSpec(),stat=stat,position=position,params=tuple(kwargs.items()));
-def geom_bar3d(mapping=None,position="stack",stat="identity",**kwargs): return LayerSpec("bar3d",mapping or AesSpec(),stat=stat,position=position,params=tuple(kwargs.items()));
+def after_stat(name): return plot_after_stat(name.name if isinstance(name,RSymbol) else name);
+def aes(*args,**kwargs):
+    mappings={};
+    if len(args)>2: raise TypeError("aes() accepts at most x and y positional aesthetics");
+    if len(args)>=1: mappings["x"]=args[0];
+    if len(args)>=2: mappings["y"]=args[1];
+    mappings.update(kwargs); normalized=[];
+    for key,value in mappings.items():
+        if isinstance(value,RSymbol): value=ColumnRef(value.name);
+        elif isinstance(value,str): value=ColumnRef(value);
+        normalized.append((key,value));
+    return AesSpec(tuple(normalized));
+def ggplot(data_value=None,mapping=None): return plot_ggplot(data_value,mapping);
+def geom_bar(mapping=None,position="stack",stat="identity",**kwargs): return plot_geom_bar(mapping,position=position,stat=stat,**kwargs);
+def geom_bar3d(mapping=None,position="stack",stat="identity",**kwargs): return plot_geom_bar3d(mapping,position=position,stat=stat,**kwargs);
+def geom_histogram(mapping=None,binwidth=None,bins=None,**kwargs): return plot_geom_histogram(mapping,binwidth=binwidth,bins=bins,**kwargs);
+def ggsave(filename,plot,width=8,height=6,dpi=100,**kwargs): return plot_ggsave(filename,plot,width=width,height=height,dpi=dpi,**kwargs);
+def print_value(value):
+    if isinstance(value,PlotSpec): show_plot(value,block=False); return value;
+    return value;
+def system2(command,args=None,stdout=None,stderr=None,wait=True):
+    argv=[str(command)];
+    if args is not None:
+        if isinstance(args,(list,tuple,RVector)): argv.extend(str(item) for item in args);
+        else: argv.append(str(args));
+    out=subprocess.DEVNULL if stdout is False else None; err=subprocess.DEVNULL if stderr is False else None;
+    if wait: return subprocess.run(argv,stdout=out,stderr=err,check=False).returncode;
+    subprocess.Popen(argv,stdout=out,stderr=err,start_new_session=True); return 0;
 def lower_chart(plot,layer): return to_chart_spec(plot.add(layer));
+
 class Runtime:
-    def __init__(self): self.env={"NA":NA,"c":c,"factor":factor,"data":data,"readRDS":readRDS,"saveRDS":saveRDS};
+    def __init__(self): self.env={"NA":NA,"NULL":None,"TRUE":True,"FALSE":False,"c":c,"factor":factor,"data":data,"readRDS":readRDS,"saveRDS":saveRDS};
     def set(self,name,value): self.env[str(name)]=value; return value;
     def get(self,name): return self.env[str(name)];
+    def resolve(self,name):
+        text=str(name);
+        if text in self.env: return self.env[text];
+        try: value=dataset(text); self.env[text]=value; return value;
+        except (KeyError,FileNotFoundError): raise NameError("object '{}' not found".format(text));

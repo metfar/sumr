@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sumr"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "R-compatible data-science subset for the Sum ecosystem."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "GPL-2.0-or-later" }
 authors = [{ name = "William Martinez Bas", email = "metfar@gmail.com" }]
-dependencies = ['sumcore>=0.1.0a1', 'sumdata>=0.1.0a1', 'sumplot>=0.1.0a1']
+dependencies = ['sumcore>=0.1.0a2', 'sumdata>=0.1.0a2', 'sumplot>=0.1.0a2']
 classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3"]
 
 [project.scripts]

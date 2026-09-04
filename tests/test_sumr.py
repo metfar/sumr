@@ -27,3 +27,21 @@ def test_data_mtcars(): assert len(data("mtcars"))==32;
 def test_data_catalog(): assert len(data(package="datasets"))==108;
 def test_bare_aes_is_column(): assert isinstance(aes(x="mpg").get("x"),ColumnRef);
 def test_execute_subset(): out,rt=execute("a <- c(1,2)\nprint(a)"); assert list(out[0])==[1,2];
+
+def test_cli_version(capsys):
+    from sumr.cli import main;
+    import pytest;
+    with pytest.raises(SystemExit) as exc: main(["--version"]);
+    assert exc.value.code==0; assert "sumR 0.1.0a2" in capsys.readouterr().out;
+
+def test_cli_stdin_no_file(monkeypatch,capsys):
+    from sumr.cli import main;
+    import io,sys;
+    monkeypatch.setattr(sys,"stdin",io.StringIO("a <- 2\nprint(a)\n"));
+    assert main([])==0; assert "2" in capsys.readouterr().out;
+
+
+def test_ggplot_histogram_acceptance(tmp_path,monkeypatch):
+    monkeypatch.setenv("MPLBACKEND","Agg"); monkeypatch.chdir(tmp_path);
+    source='library(ggplot2);\ndatacamp_light_blue = "#51A8C9";\np = ggplot(mtcars, aes(mpg, after_stat(density))) + geom_histogram(binwidth = 1, fill = datacamp_light_blue);\nprint(p);\nggsave("mtcars_mpg_density_blue.png", plot = p, width = 8, height = 6, dpi = 150);';
+    out,rt=execute(source); target=tmp_path/"mtcars_mpg_density_blue.png"; assert target.exists(); assert target.read_bytes()[:8]==bytes.fromhex("89504e470d0a1a0a"); assert rt.get("p").layers[0].stat=="bin";
