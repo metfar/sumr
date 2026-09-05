@@ -24,7 +24,7 @@ import ast;
 import re;
 import sys;
 from . import __version__;
-from .runtime import RSymbol, Runtime, aes, after_stat, c, data, factor, geom_bar, geom_bar3d, geom_histogram, ggsave, ggplot, print_value, readRDS, saveRDS, system2;
+from .runtime import RSymbol, Runtime, aes, after_stat, beep, c, data, factor, geom_bar, geom_bar3d, geom_histogram, ggsave, ggplot, play, print_value, readRDS, saveRDS, sound, stopAudio, system2, waitAudio;
 from .screen import border, border_width, cols, configure_graphics, cursor, gcolors, gheight, gprint, gprintf, gwidth, paper, rows;
 from sumplot import PlotSpec;
 
@@ -152,6 +152,10 @@ class Parser:
         if lname=='system2': return system2(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});
         if lname=='readrds': return readRDS(*self.values(args));
         if lname=='saverds': return saveRDS(*self.values(args));
+        if lname in ('beep','sound','play'):
+            fn={'beep':beep,'sound':sound,'play':play}[lname]; return fn(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});
+        if lname=='stopaudio': return stopAudio();
+        if lname=='waitaudio': return waitAudio();
         if lname in ('cursor','cols','rows','gwidth','gheight','gcolors','paper','border','border_width','gprint','gprintf'):
             fn={'cursor':cursor,'cols':cols,'rows':rows,'gwidth':gwidth,'gheight':gheight,'gcolors':gcolors,'paper':paper,'border':border,'border_width':border_width,'gprint':gprint,'gprintf':gprintf}[lname];
             return fn(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});

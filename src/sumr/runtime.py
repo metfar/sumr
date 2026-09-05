@@ -22,6 +22,7 @@
 import subprocess;
 from dataclasses import dataclass;
 from sumdata import NA, dataset, dataset_names, read_rds, save_rds;
+from sumcore.audio_api import beep, play, sound, stop_audio, wait_audio;
 from .screen import clear_layer, cols, configure_graphics, cursor, gcolors, gheight, gprint, gprintf, gwidth, rows, sort_layers;
 from sumplot import AesSpec, ColumnRef, PlotSpec, after_stat as plot_after_stat, geom_bar as plot_geom_bar, geom_bar3d as plot_geom_bar3d, geom_histogram as plot_geom_histogram, ggplot as plot_ggplot, ggsave as plot_ggsave, show_plot, to_chart_spec;
 
@@ -46,6 +47,8 @@ def data(name=None,package=None):
     return dataset(name);
 def readRDS(path): return read_rds(path);
 def saveRDS(value,path): return save_rds(path,value);
+def stopAudio(): return stop_audio();
+def waitAudio(): return wait_audio();
 def after_stat(name): return plot_after_stat(name.name if isinstance(name,RSymbol) else name);
 def aes(*args,**kwargs):
     mappings={};
@@ -78,7 +81,7 @@ def lower_chart(plot,layer): return to_chart_spec(plot.add(layer));
 
 class Runtime:
     def __init__(self):
-        self.env={"NA":NA,"NULL":None,"Null":None,"null":None,"NIL":None,"Nil":None,"nil":None,"None":None,"none":None,"TRUE":True,"True":True,"true":True,"FALSE":False,"False":False,"false":False,"c":c,"factor":factor,"data":data,"readRDS":readRDS,"saveRDS":saveRDS,"cursor":cursor,"cols":cols,"rows":rows,"gwidth":gwidth,"gheight":gheight,"gcolors":gcolors,"gprint":gprint,"gprintf":gprintf};
+        self.env={"NA":NA,"NULL":None,"Null":None,"null":None,"NIL":None,"Nil":None,"nil":None,"None":None,"none":None,"TRUE":True,"True":True,"true":True,"FALSE":False,"False":False,"false":False,"c":c,"factor":factor,"data":data,"readRDS":readRDS,"saveRDS":saveRDS,"beep":beep,"sound":sound,"play":play,"stopAudio":stopAudio,"waitAudio":waitAudio,"cursor":cursor,"cols":cols,"rows":rows,"gwidth":gwidth,"gheight":gheight,"gcolors":gcolors,"gprint":gprint,"gprintf":gprintf};
     def set(self,name,value): self.env[str(name)]=value; return value;
     def get(self,name): return self.env[str(name)];
     def resolve(self,name):

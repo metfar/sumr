@@ -30,4 +30,16 @@ sumr examples/mtcars_mpg_density_blue.R
 
 It renders `print(p)`, writes `mtcars_mpg_density_blue.png` through `ggsave()`, and demonstrates non-blocking `system2("xdg-open", ...)`.
 
+## Shared audio
+
+```r
+beep(0.25, 12);
+sound(440, 18.2);
+play("T180O5cdefgabC");
+play("O4c", hold=TRUE, timeout=3);
+stopAudio();
+```
+
+The functions delegate to `sumCore`; sumR does not duplicate synthesis.
+
 <p align=center><b>- oOo -</b></p>
