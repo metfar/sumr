@@ -18,5 +18,8 @@ cursor(TRUE);
 print(gwidth());
 print(gheight());
 print(gcolors());
+paper(0);
+border(1);
+border_width(24);
 gprint(20, 30, "sumR graphics text");
 gprintf(20, 60, "size=%dx%d", gwidth(), gheight());

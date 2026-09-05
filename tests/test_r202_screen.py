@@ -20,3 +20,13 @@ def test_r_cursor_grid_and_graphics_functions_through_parser():
     assert out == [80,25,320,200,16];
     assert commands[-1].operation=="text" and commands[-1].arguments==(10,20,"x=7");
     size[:]=[39,17]; out,_=execute('print(cols()); print(rows());',rt); assert out==[39,17];
+
+
+def test_r2021_border_width_and_parser_support():
+    import sumr.screen as screen;
+    from sumr.cli import execute;
+    seen=[]; screen.configure_graphics(handler=seen.append);
+    output,unused_rt=execute('paper(0); border(1); border_width(20); print(border_width());');
+    assert output[-1] == 20;
+    assert any(item.operation == "border_width" and item.arguments == (20,) for item in seen);
+    assert [item.operation for item in seen[:2]] == ["paper","border"];

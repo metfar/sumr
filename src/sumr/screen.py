@@ -32,6 +32,7 @@ _text_screen = TerminalTextScreen() if TerminalTextScreen is not None else TextS
 _graphics_size_provider = None;
 _graphics_handler = None;
 _graphics_fallback = (640,480,16);
+_border_width = 0;
 
 
 def set_text_screen(screen):
@@ -72,6 +73,19 @@ def gwidth(): return _graphics_size()[0];
 def gheight(): return _graphics_size()[1];
 def gcolors(): return _graphics_size()[2];
 
+def paper(value):
+    return _emit("paper", (value,));
+
+def border(value):
+    return _emit("border", (value,));
+
+def border_width(value=_MISSING):
+    global _border_width;
+    if value is _MISSING: return _border_width;
+    width=int(value);
+    if width < 0: raise ValueError("border width must be non-negative");
+    _border_width=width; _emit("border_width",(width,)); return width;
+
 def _emit(operation,arguments=(),**options):
     command=GraphicsCommand(str(operation),tuple(arguments),tuple(options.items()));
     if _graphics_handler is not None: _graphics_handler(command);
@@ -91,4 +105,4 @@ def gprintf(x,y,format_text,*values):
 def sort_layers(*names,direction="ASC"): return _emit("sort_layers",(tuple(str(n) for n in names),str(direction).upper()));
 def clear_layer(name): return _emit("clear_layer",(str(name),));
 
-__all__=["set_text_screen","text_screen","cols","rows","cursor","configure_graphics","gwidth","gheight","gcolors","gprint","gprintf","sort_layers","clear_layer"];
+__all__=["set_text_screen","text_screen","cols","rows","cursor","configure_graphics","gwidth","gheight","gcolors","paper","border","border_width","gprint","gprintf","sort_layers","clear_layer"];

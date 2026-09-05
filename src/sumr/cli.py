@@ -25,7 +25,7 @@ import re;
 import sys;
 from . import __version__;
 from .runtime import RSymbol, Runtime, aes, after_stat, c, data, factor, geom_bar, geom_bar3d, geom_histogram, ggsave, ggplot, print_value, readRDS, saveRDS, system2;
-from .screen import cols, cursor, gcolors, gheight, gprint, gprintf, gwidth, rows;
+from .screen import border, border_width, cols, configure_graphics, cursor, gcolors, gheight, gprint, gprintf, gwidth, paper, rows;
 from sumplot import PlotSpec;
 
 _TOKEN=re.compile(r'\s*(?:(?P<string>"(?:\\.|[^"\\])*")|(?P<number>-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(?P<assign><-)|(?P<name>[A-Za-z_.][A-Za-z0-9_.]*)|(?P<op>[(),+=]))');
@@ -152,8 +152,8 @@ class Parser:
         if lname=='system2': return system2(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});
         if lname=='readrds': return readRDS(*self.values(args));
         if lname=='saverds': return saveRDS(*self.values(args));
-        if lname in ('cursor','cols','rows','gwidth','gheight','gcolors','gprint','gprintf'):
-            fn={'cursor':cursor,'cols':cols,'rows':rows,'gwidth':gwidth,'gheight':gheight,'gcolors':gcolors,'gprint':gprint,'gprintf':gprintf}[lname];
+        if lname in ('cursor','cols','rows','gwidth','gheight','gcolors','paper','border','border_width','gprint','gprintf'):
+            fn={'cursor':cursor,'cols':cols,'rows':rows,'gwidth':gwidth,'gheight':gheight,'gcolors':gcolors,'paper':paper,'border':border,'border_width':border_width,'gprint':gprint,'gprintf':gprintf}[lname];
             return fn(*self.values(args),**{key:self.value(value) for key,value in kwargs.items()});
         raise ValueError("Unsupported sumR function: {}".format(name));
 
@@ -181,11 +181,23 @@ def repl():
         try: out,rt=execute(line,rt); _print_values(out);
         except Exception as exc: print("Error: {}".format(exc),file=sys.stderr);
 def main(argv=None):
-    parser=argparse.ArgumentParser(prog="sumR",description="SUM R-compatible data-science runtime."); parser.add_argument("--version",action="version",version="sumR {}".format(__version__)); parser.add_argument("file",nargs="?"); parser.add_argument("-e","--expression"); args=parser.parse_args(argv);
+    parser=argparse.ArgumentParser(prog="sumR",description="SUM R-compatible data-science runtime."); parser.add_argument("--version",action="version",version="sumR {}".format(__version__)); parser.add_argument("--gui",action="store_true",help="attach the optional sumGUI graphics device for gprint/gprintf and screen-plane commands"); parser.add_argument("file",nargs="?"); parser.add_argument("-e","--expression"); args=parser.parse_args(argv);
+    window=None;
+    if args.gui:
+        try:
+            from sumgui.graphics import GraphicsWindow;
+            from sumui import basic_mode;
+        except (ImportError,ModuleNotFoundError) as exc:
+            parser.error("--gui requires sumGUI/Pygame")
+        window=GraphicsWindow(title="sumR graphics",close_on_escape=True);
+        window.handle(basic_mode(640,480));
+        configure_graphics(size_provider=lambda: (window.surface.width,window.surface.height,16) if window.surface is not None else (640,480,16),handler=window.handle,fallback=(640,480,16));
     if args.expression is not None: source=args.expression;
     elif args.file is not None: source=open(args.file,encoding="utf-8").read();
     elif not sys.stdin.isatty():
         source=sys.stdin.read();
         if not source.strip(): parser.print_help(); return 0;
     else: return repl();
-    out,_=execute(source); _print_values(out); return 0;
+    out,_=execute(source); _print_values(out);
+    if window is not None and window.screen is not None and not window.closed: window.finish(wait=True);
+    return 0;

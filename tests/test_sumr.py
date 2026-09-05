@@ -32,7 +32,7 @@ def test_cli_version(capsys):
     from sumr.cli import main;
     import pytest;
     with pytest.raises(SystemExit) as exc: main(["--version"]);
-    assert exc.value.code==0; assert "sumR 0.1.0a3" in capsys.readouterr().out;
+    assert exc.value.code==0; assert "sumR 0.1.0a4" in capsys.readouterr().out;
 
 def test_cli_stdin_no_file(monkeypatch,capsys):
     from sumr.cli import main;
@@ -45,3 +45,23 @@ def test_ggplot_histogram_acceptance(tmp_path,monkeypatch):
     monkeypatch.setenv("MPLBACKEND","Agg"); monkeypatch.chdir(tmp_path);
     source='library(ggplot2);\ndatacamp_light_blue = "#51A8C9";\np = ggplot(mtcars, aes(mpg, after_stat(density))) + geom_histogram(binwidth = 1, fill = datacamp_light_blue);\nprint(p);\nggsave("mtcars_mpg_density_blue.png", plot = p, width = 8, height = 6, dpi = 150);';
     out,rt=execute(source); target=tmp_path/"mtcars_mpg_density_blue.png"; assert target.exists(); assert target.read_bytes()[:8]==bytes.fromhex("89504e470d0a1a0a"); assert rt.get("p").layers[0].stat=="bin";
+
+def test_r2021_cli_gui_attaches_graphics_device(monkeypatch):
+    import sys,types;
+    from sumr.cli import main;
+    seen=[];
+    class Surface:
+        width=640; height=480;
+    class Window:
+        def __init__(self,**unused): self.surface=None; self.screen=None; self.closed=False; self.finished=False;
+        def handle(self,item):
+            seen.append(item);
+            if hasattr(item,"logical_width"):
+                self.surface=Surface(); self.screen=object();
+            return item;
+        def finish(self,wait=False): self.finished=bool(wait); self.closed=True; return 0;
+    package=types.ModuleType("sumgui"); graphics=types.ModuleType("sumgui.graphics"); graphics.GraphicsWindow=Window;
+    monkeypatch.setitem(sys.modules,"sumgui",package); monkeypatch.setitem(sys.modules,"sumgui.graphics",graphics);
+    assert main(["--gui","-e",'paper(0); border(1); border_width(12); gprint(10,20,"R GUI")']) == 0;
+    operations=[getattr(item,"operation",None) for item in seen];
+    assert "border_width" in operations and "text" in operations;
