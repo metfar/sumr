@@ -32,7 +32,7 @@ def test_cli_version(capsys):
     from sumr.cli import main;
     import pytest;
     with pytest.raises(SystemExit) as exc: main(["--version"]);
-    assert exc.value.code==0; assert "sumR 0.1.0a5" in capsys.readouterr().out;
+    assert exc.value.code==0; assert "sumR 0.1.0a6" in capsys.readouterr().out;
 
 def test_cli_stdin_no_file(monkeypatch,capsys):
     from sumr.cli import main;
@@ -65,3 +65,11 @@ def test_r2021_cli_gui_attaches_graphics_device(monkeypatch):
     assert main(["--gui","-e",'paper(0); border(1); border_width(12); gprint(10,20,"R GUI")']) == 0;
     operations=[getattr(item,"operation",None) for item in seen];
     assert "border_width" in operations and "text" in operations;
+
+
+def test_audio_facade_is_shared_sumcore_contract():
+    from sumcore import audio_api;
+    rt=Runtime();
+    assert rt.resolve("beep") is audio_api.beep;
+    assert rt.resolve("sound") is audio_api.sound;
+    assert rt.resolve("play") is audio_api.play;
