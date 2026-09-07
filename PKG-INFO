@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: sumr
-Version: 0.1.0a6
+Version: 0.1.0a7
 Summary: R-compatible data-science subset for the Sum ecosystem.
 Author-email: William Martinez Bas <metfar@gmail.com>
 License: GPL-2.0-or-later
@@ -9,7 +9,7 @@ Classifier: Programming Language :: Python :: 3
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Requires-Dist: sumcore>=0.1.0a9
+Requires-Dist: sumcore>=0.1.0a10
 Requires-Dist: sumui>=0.1.0a13
 Requires-Dist: sumtui>=0.8.0a12
 Requires-Dist: sumdata>=0.1.0a2
@@ -32,8 +32,6 @@ sumr examples/mtcars_mpg_density_blue.R
 ```
 
 It renders `print(p)`, writes `mtcars_mpg_density_blue.png` through `ggsave()`, and demonstrates non-blocking `system2("xdg-open", ...)`.
-
-<p align=center><b>- oOo -</b></p>
 
 ## Graphical acceptance example
 
@@ -61,5 +59,9 @@ stopAudio();
 ```
 
 The functions delegate to `sumCore`; sumR does not duplicate synthesis.
+
+<p align=center><b>- oOo -</b></p>
+
+Audio example: `examples/audio.R` demonstrates `beep()`, `sound()` and `play()` through the shared `sumcore` service.
 
 <p align=center><b>- oOo -</b></p>

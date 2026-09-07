@@ -32,7 +32,7 @@ def test_cli_version(capsys):
     from sumr.cli import main;
     import pytest;
     with pytest.raises(SystemExit) as exc: main(["--version"]);
-    assert exc.value.code==0; assert "sumR 0.1.0a6" in capsys.readouterr().out;
+    assert exc.value.code==0; assert "sumR 0.1.0a7" in capsys.readouterr().out;
 
 def test_cli_stdin_no_file(monkeypatch,capsys):
     from sumr.cli import main;

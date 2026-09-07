@@ -13,8 +13,6 @@ sumr examples/mtcars_mpg_density_blue.R
 
 It renders `print(p)`, writes `mtcars_mpg_density_blue.png` through `ggsave()`, and demonstrates non-blocking `system2("xdg-open", ...)`.
 
-<p align=center><b>- oOo -</b></p>
-
 ## Graphical acceptance example
 
 `examples/mtcars_mpg_density_blue.R` exercises `library(ggplot2)`, `geom_histogram()`, `after_stat(density)`, `print()`, `ggsave()` and non-blocking `system2()`.
@@ -41,5 +39,9 @@ stopAudio();
 ```
 
 The functions delegate to `sumCore`; sumR does not duplicate synthesis.
+
+<p align=center><b>- oOo -</b></p>
+
+Audio example: `examples/audio.R` demonstrates `beep()`, `sound()` and `play()` through the shared `sumcore` service.
 
 <p align=center><b>- oOo -</b></p>
